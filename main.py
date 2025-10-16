@@ -2,6 +2,8 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
@@ -62,9 +64,10 @@ if menu == "🏠 Overview":
     
     Use the sidebar to navigate between sections.
     """)
+
     st.image("https://upload.wikimedia.org/wikipedia/commons/f/fd/RMS_Titanic_3.jpg", use_container_width=True)
     st.markdown("---")
-    st.write("Developed with ❤️ using **Streamlit** and **Scikit-learn**")
+    st.write("Developed with ❤️ using **Streamlit**, **Seaborn**, and **Scikit-learn**")
 
 # ===============================================================
 # 📊 Data Exploration
@@ -85,21 +88,22 @@ elif menu == "📊 Data Exploration":
     st.subheader("Visualizations")
 
     col1, col2 = st.columns(2)
-
     with col1:
-        st.write("### Count of Survivors")
-        surv_counts = titanic_data['Survived'].value_counts().rename({0: 'Not Survived', 1: 'Survived'})
-        st.bar_chart(surv_counts)
+        fig1, ax1 = plt.subplots()
+        sns.countplot(x='Survived', data=titanic_data, ax=ax1)
+        ax1.set_title("Count of Survivors")
+        st.pyplot(fig1)
 
     with col2:
-        st.write("### Survival Count by Gender")
-        gender_survival = titanic_data.groupby('Sex')['Survived'].value_counts().unstack().fillna(0)
-        gender_survival.index = ['Male', 'Female']
-        st.bar_chart(gender_survival)
+        fig2, ax2 = plt.subplots()
+        sns.countplot(x='Sex', hue='Survived', data=titanic_data, ax=ax2)
+        ax2.set_title("Survival Count by Gender")
+        st.pyplot(fig2)
 
-    st.write("### Survival Count by Passenger Class")
-    pclass_survival = titanic_data.groupby('Pclass')['Survived'].value_counts().unstack().fillna(0)
-    st.bar_chart(pclass_survival)
+    fig3, ax3 = plt.subplots()
+    sns.countplot(x='Pclass', hue='Survived', data=titanic_data, ax=ax3)
+    ax3.set_title("Survival Count by Passenger Class")
+    st.pyplot(fig3)
 
 # ===============================================================
 # 🤖 Model Training & Evaluation
@@ -108,20 +112,25 @@ elif menu == "🤖 Model Training & Evaluation":
     st.title("🤖 Model Training & Evaluation")
 
     st.subheader("Model Performance Metrics")
-    st.metric(label="Accuracy", value=f"{acc:.2f}")
-    st.metric(label="Precision", value=f"{precision:.2f}")
-    st.metric(label="Recall", value=f"{recall:.2f}")
-    st.metric(label="F1 Score", value=f"{f1:.2f}")
+    st.write(f"**Accuracy:** {acc:.2f}")
+    st.write(f"**Precision:** {precision:.2f}")
+    st.write(f"**Recall:** {recall:.2f}")
+    st.write(f"**F1-Score:** {f1:.2f}")
 
     st.markdown("---")
+
     st.subheader("Classification Report")
     st.text(classification_report(Y_test, X_test_Prediction))
 
     st.markdown("---")
+
     st.subheader("Confusion Matrix")
     cm = confusion_matrix(Y_test, X_test_Prediction)
-    cm_df = pd.DataFrame(cm, index=["Actual 0", "Actual 1"], columns=["Pred 0", "Pred 1"])
-    st.dataframe(cm_df.style.background_gradient(cmap='Blues'))
+    fig, ax = plt.subplots()
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax)
+    ax.set_xlabel("Predicted")
+    ax.set_ylabel("Actual")
+    st.pyplot(fig)
 
 # ===============================================================
 # 🧍 Passenger Survival Prediction
